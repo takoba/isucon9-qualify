@@ -43,6 +43,22 @@ services:
       - "localhost:$LOCALHOST_IP"
     command: php-fpm
 
+  payment:
+    build: ../../cmd/payment
+    volumes:
+      - ../../:/app
+    ports:
+      - "5555:5555"
+    command: sh -c "make clean && make && /app/bin/payment"
+
+  shipment:
+    build: ../../cmd/shipment
+    volumes:
+      - ../../:/app
+    ports:
+      - "7000:7000"
+    command: sh -c "make clean && make && /app/bin/shipment"
+
   nginx:
     build: ../nginx
     volumes:
