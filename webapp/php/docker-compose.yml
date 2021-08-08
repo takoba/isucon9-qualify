@@ -1,0 +1,62 @@
+version: "3"
+services:
+  mysql:
+    image: mysql:5.7
+    volumes:
+      - ../mysql/data:/var/lib/mysql
+      - ../sql:/docker-entrypoint-initdb.d
+      - ../logs/mysql:/var/log/mysql
+      - ../mysql/conf.d/my.cnf:/etc/mysql/conf.d/my.cnf
+      - ../mysql/conf.d/slowlog.cnf:/etc/mysql/conf.d/slowlog.cnf
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: isucari
+      MYSQL_USER: isucari
+      MYSQL_PASSWORD: isucari
+    ports:
+      - "3306:3306"
+
+  api-server:
+    build: .
+    entrypoint:
+      - dockerize
+      - -timeout
+      - 60s
+      - -wait
+      - tcp://mysql:3306
+    volumes:
+      - ../sql:/sql
+      - ../php:/php
+      - ../public:/public
+      - ../../provisioning/roles/php/files/isucari.php-fpm.conf:/usr/local/etc/php-fpm.d/isucari.conf
+    environment:
+      MYSQL_DBNAME: isucari
+      MYSQL_USER: isucari
+      MYSQL_PASS: isucari
+      MYSQL_HOST: mysql
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mysql
+    command: php-fpm
+
+  nginx:
+    build: ../nginx
+    volumes:
+        - ../../provisioning/roles/external.nginx/files/etc/nginx/nginx.conf:/etc/nginx/nginx.conf.template
+        - ../../provisioning/roles/external.nginx/files/etc/nginx/sites-available/external-shipment.conf:/etc/nginx/sites-enabled/external-shipment.conf
+        - ../../provisioning/roles/external.nginx/files/etc/nginx/sites-available/external-payment.conf:/etc/nginx/sites-enabled/external-payment.conf
+        - ../../provisioning/certs/isucon9q.catatsuy.org:/etc/nginx/ssl
+        - ../logs/nginx:/var/log/nginx
+        - ../public:/www/data
+    ports:
+      - "8080:80"
+    environment:
+      API_SERVER: api-server
+    command: >
+        /bin/sh -c
+        "envsubst '
+        $$API_SERVER
+        '< /etc/nginx/nginx.conf.template
+        > /etc/nginx/nginx.conf
+        && nginx -g 'daemon off;'"
