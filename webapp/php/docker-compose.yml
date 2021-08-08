@@ -38,6 +38,8 @@ services:
       - "8000:8000"
     depends_on:
       - mysql
+    extra_hosts:
+      - "localhost:$LOCALHOST_IP"
     command: php-fpm
 
   nginx:
