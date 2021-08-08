@@ -172,6 +172,11 @@ class Service
 
     private function getConfigByName($name)
     {
+        $env = Environment::get(strtoupper($name), false);
+        if ($env) {
+            return ['val' => $env];
+        }
+
         $sth = $this->dbh->prepare('SELECT * FROM `configs` WHERE `name` = ?');
         $r = $sth->execute([$name]);
         if ($r === false) {
