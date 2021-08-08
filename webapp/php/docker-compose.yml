@@ -53,6 +53,8 @@ services:
       - "8080:80"
     environment:
       API_SERVER: api-server
+    depends_on:
+      - api-server
     command: >
         /bin/sh -c
         "envsubst '
