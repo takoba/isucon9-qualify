@@ -30,10 +30,11 @@ services:
       - ../public:/public
       - ../../provisioning/roles/php/files/isucari.php-fpm.conf:/usr/local/etc/php-fpm.d/isucari.conf
     environment:
-      MYSQL_DBNAME: isucari
-      MYSQL_USER: isucari
-      MYSQL_PASS: isucari
-      MYSQL_HOST: mysql
+      - MYSQL_DBNAME=isucari
+      - MYSQL_USER=isucari
+      - MYSQL_PASS=isucari
+      - MYSQL_HOST=mysql
+      - LOCALHOST_IP
     ports:
       - "8000:8000"
     depends_on:
